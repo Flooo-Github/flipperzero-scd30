@@ -1,6 +1,12 @@
 name: FAP: Build and lint
 
-on: [push, pull_request]
+on: 
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   ufbt-build-action:
@@ -23,10 +29,8 @@ jobs:
           name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
           path: ${{ steps.build-app.outputs.fap-artifacts }}
 
-      # You can remove this step if you don't want to check source code formatting
       - name: Lint sources
         uses: flipperdevices/flipperzero-ufbt-action@v0.1
         with:
-          # skip SDK setup, we already did it in previous step
           skip-setup: true
           task: lint
