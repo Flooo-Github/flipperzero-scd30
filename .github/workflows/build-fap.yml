@@ -1,48 +1,32 @@
-name: Build FAP
+name: FAP: Build and lint
 
-# Déclencheurs d'événements pour exécuter le workflow
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+on: [push, pull_request]
 
 jobs:
-  build:
+  ufbt-build-action:
     runs-on: windows-latest
-
+    name: 'ufbt: Build for Dev branch'
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Build with ufbt
+        uses: flipperdevices/flipperzero-ufbt-action@v0.1
+        id: build-app
         with:
-          python-version: '3.x'
+          # Set to 'release' to build for latest published release version
+          sdk-channel: dev
 
-      - name: Install build dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry
-        shell: cmd
-
-      - name: Install project dependencies
-        run: |
-          poetry install
-        shell: cmd
-
-      - name: Build FAP
-        uses: DGF1994/build-flipper-application-package-fap@v1
+      - name: Upload app artifacts
+        uses: actions/upload-artifact@v3
         with:
-          working-directory: .  # Assurez-vous que votre projet est à la racine
-          flipper-version: 'latest'
-          build-output-path: '.\output'
-          additional-args: ''  # Ajoutez des arguments supplémentaires si nécessaire
+          name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
+          path: ${{ steps.build-app.outputs.fap-artifacts }}
 
-      - name: Upload FAP artifact
-        uses: actions/upload-artifact@v2
+      # You can remove this step if you don't want to check source code formatting
+      - name: Lint sources
+        uses: flipperdevices/flipperzero-ufbt-action@v0.1
         with:
-          name: fap-package
-          path: .\output\*.fap
+          # skip SDK setup, we already did it in previous step
+          skip-setup: true
+          task: lint
