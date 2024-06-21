@@ -1,1 +1,47 @@
+name: Build FAP
 
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+        shell: cmd
+
+      - name: Install project dependencies
+        run: |
+          poetry install
+        shell: cmd
+
+      - name: Build FAP
+        uses: DGF1994/build-flipper-application-package-fap@v1
+        with:
+          working-directory: .  # Assurez-vous que votre projet est à la racine
+          flipper-version: 'latest'
+          build-output-path: '.\output'
+          additional-args: ''  # Ajoutez des arguments supplémentaires si nécessaire
+
+      - name: Upload FAP artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: fap-package
+          path: .\output\*.fap
