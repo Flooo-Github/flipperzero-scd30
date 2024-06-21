@@ -1,12 +1,13 @@
 name: Build FAP
 
+# Déclencheurs d'événements pour exécuter le workflow
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   build:
